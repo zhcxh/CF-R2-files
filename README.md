@@ -30,7 +30,7 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 
 例如 您的workers项目域名为：`xxxxxx.workers.dev` , token值为 `ssssss` , 需要访问的文件名为 `a.pdf`；
   - 构造 URL 的格式为 `https://您的Workers域名/?token=您的TOKEN` 即 `https://xxxxxx.workers.dev/?token=ssssss`。您就可以在浏览器中查看文件了,建议绑定自己域名，墙内workers.dev不一定能连通。
-  - 文件直连地址则为： `https://您的Workers域名/文件名?token=您的TOKEN` 即 `https://xxxxxx.workers.dev/a.pdf?token=ssssss`。
+  - 文件直连地址则为： `https://您的Workers域名/files/文件名?token=您的TOKEN` 即 `https://xxxxxx.workers.dev/files/a.pdf?token=ssssss`。
 
 4. **使用辅助脚本上传文件**
 
