@@ -17,12 +17,12 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 
 2. **本地部署到 Cloudflare Workers**
 
-   下载项目至本地 并修改wrangler.toml配置文件中的 AUTH_TOKEN = "xxxxxxxxxxx" # ← 你的 TOKEN,R2 存储桶名称 bucket_name = "my-r2-name"   # ← 你的 R2 桶名 就是你上面创建 R2 存储桶 的名称
-   以管理员身份运行 CMD
-   npm i -g wrangler
-   wrangler login
-   cd 进项目目录
-   wrangler deploy
+   - 下载项目至本地 并修改wrangler.toml配置文件中的 AUTH_TOKEN = "xxxxxxxxxxx" # ← 你的 TOKEN,R2 存储桶名称 bucket_name = "my-r2-name"   # ← 你的 R2 桶名 就是你上面创建 R2 存储桶 的名称
+   - 以管理员身份运行 CMD
+   - npm i -g wrangler
+   - wrangler login
+   - cd 进项目目录
+   - wrangler deploy
 
 3. **检查 设置 TOKEN 变量 ， 绑定 R2 存储桶 是否正确**
 
