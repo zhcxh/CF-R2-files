@@ -1,5 +1,5 @@
 ## 📁 R2 文件服务器
-R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是根据[cmliu/CF-Workers-TEXT2KV](https://github.com/cmliu/CF-Workers-TEXT2KV)编写得，由于有65行限制，所以想到R2存储桶 10G免费容量！
+R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是根据[cmliu/CF-Workers-TEXT2KV](https://github.com/cmliu/CF-Workers-TEXT2KV)编写得，由于KV限制，所以想到R2存储桶 10G免费容量！
 
 ## 功能特性
 - **文件存储**: 一行命令部署的在线网盘，支持上传、下载、直连、删除，全网页操作。
