@@ -11,18 +11,23 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 
 ## 使用说明
 
-1. **部署到 Cloudflare Workers**
-
-  将项目代码部署到您的 Cloudflare Workers 服务。您需要先在 Cloudflare 上创建一个 Workers 项目,然后将 `worker.js` 文件的内容复制粘贴到 Workers 编辑器中。
-
-2. **创建 R2 存储**
+1. **创建 R2 存储**
 
   在您的 Cloudflare 存储中选R2,创建一个新的 存储桶 记下名称,因为您需要将它绑定到 Workers 上。
 
-3. **设置 TOKEN 变量 ， 绑定 R2 存储桶**
+2. **本地部署到 Cloudflare Workers**
 
-  - 为了增加安全性,您需要设置一个 TOKEN 变量,作为访问文件的密钥。在 Cloudflare Workers 的环境变量设置中,添加一个名为 `AUTH_TOKEN` 的变量,并为其赋予一个安全的值。
-  - 绑定 R2 存储桶 变量：`MY_BUCKET` 值就是你上面创建 存储桶 的名称
+   下载项目至本地 并修改wrangler.toml配置文件中的 AUTH_TOKEN = "xxxxxxxxxxx" # ← 你的 TOKEN,R2 存储桶名称 bucket_name = "my-r2-name"   # ← 你的 R2 桶名 就是你上面创建 R2 存储桶 的名称
+   以管理员身份运行 CMD
+   npm i -g wrangler
+   wrangler login
+   cd 进项目目录
+   wrangler deploy
+
+3. **检查 设置 TOKEN 变量 ， 绑定 R2 存储桶 是否正确**
+
+  - 为了增加安全性,您需要设置一个 TOKEN 变量,作为访问文件的密钥。检查在 Cloudflare Workers 的环境变量设置中,一个名为 `AUTH_TOKEN` 的变量是否与wrangler.toml一致,并为其赋予一个安全的值。
+  - 绑定 R2 存储桶 变量：`MY_BUCKET` 值 是否与wrangler.toml一致
 
 4. **访问配置页面**
 
@@ -31,9 +36,10 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 
 5. **使用辅助脚本上传文件**
 
-  - Windows 用户可以下载 `upload.bat` 脚本,然后拖动文件至 `update.bat` 来上传本地文件到 R2。
+  - 修改 `upload.bat`中你的域名和token。
+  - Windows 用户可以下载 `upload.bat` 脚本,然后拖动文件至 `upload.bat` 来上传本地文件到 R2。
 
-6. **通过 URL 访问文件**
+6. **通过 web 访问文件**
 
 例如 您的workers项目域名为：`xxxxxx.workers.dev` , token值为 `ssssss` , 需要访问的文件名为 `a.pdf`；
   - 构造 URL 的格式为 `https://您的Workers域名/文件名?token=您的TOKEN`。您就可以在浏览器中查看该文件的内容了。
