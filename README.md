@@ -1,10 +1,48 @@
-📁 R2 文件服务器
-是根据[cmliu/CF-Workers-TEXT2KV](https://github.com/cmliu/CF-Workers-TEXT2KV)编写得，由于有65行限制，所以想到R2存储桶 10G免费容量！
+## 📁 R2 文件服务器
+R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是根据[cmliu/CF-Workers-TEXT2KV](https://github.com/cmliu/CF-Workers-TEXT2KV)编写得，由于有65行限制，所以想到R2存储桶 10G免费容量！
 
-📁 R2 文件服务器（带 Token）
-一行命令部署的在线网盘，支持上传、下载、直连、删除，全网页操作。
-前端：拖拽上传 + 文件列表 + 一键复制直连
-后端：Cloudflare Workers + R2 存储，自带 Token 鉴权
-大小：单文件 ≤ 100MB，数量不限
-👉 访问 https://你的域名/?token=你的密钥 即可使用。
-👉 仅适合个人自己文件存储使用！
+## 功能特性
+- **文件存储**: 一行命令部署的在线网盘，支持上传、下载、直连、删除，全网页操作。
+- **web前端**: 拖拽上传 + 文件列表 + 一键复制直连
+- **安全访问控制**: Cloudflare Workers + R2 存储，自带 Token 鉴权，通过设置 token 参数,可以限制只有拥有正确密钥的请求才能访问您的文件。https://你的域名/?token=你的密钥 即可使用。
+- **大小限制**: 单文件 ≤ 100MB，数量不限
+- **辅助工具脚本**: 提供了 Windows 批处理文件和 Linux Shell 脚本,用于方便地从本地上传文件到 R2。
+- **👉 适用范围**: 仅适合个人自己文件存储使用！
+
+## 使用说明
+
+1. **部署到 Cloudflare Workers**
+
+  将项目代码部署到您的 Cloudflare Workers 服务。您需要先在 Cloudflare 上创建一个 Workers 项目,然后将 `worker.js` 文件的内容复制粘贴到 Workers 编辑器中。
+
+2. **创建 R2 存储**
+
+  在您的 Cloudflare 存储中选R2,创建一个新的 存储桶 记下名称,因为您需要将它绑定到 Workers 上。
+
+3. **设置 TOKEN 变量 ， 绑定 R2 存储桶**
+
+  - 为了增加安全性,您需要设置一个 TOKEN 变量,作为访问文件的密钥。在 Cloudflare Workers 的环境变量设置中,添加一个名为 `AUTH_TOKEN` 的变量,并为其赋予一个安全的值。
+  - 绑定 R2 存储桶 变量：`MY_BUCKET` 名称就是你上面创建 存储桶 的名称
+
+4. **访问配置页面**
+
+例如 您的workers项目域名为：`xxxxxx.workers.dev` , token值为 `您的TOKEN`；
+  - 访问 `https://您的Workers域名/config?token=您的TOKEN` 。
+
+5. **使用辅助脚本上传文件**
+
+  - Windows 用户可以下载 `upload.bat` 脚本,然后拖动文件至 `update.bat` 来上传本地文件到 R2。
+
+6. **通过 URL 访问文件**
+
+例如 您的workers项目域名为：`xxxxxx.workers.dev` , token值为 `ssssss` , 需要访问的文件名为 `a.pdf`；
+  - 构造 URL 的格式为 `https://您的Workers域名/文件名?token=您的TOKEN`。您就可以在浏览器中查看该文件的内容了。
+  - 你的访问地址则为： `https://xxxxxx.workers.dev/a.pdf?token=ssssss`。
+
+7. **简单的更新文件内容**
+
+  直接web或脚本bat上传,即可更新
+
+通过这个无服务器应用,您可以方便地在 Cloudflare 的分布式网络上存储和管理文件,同时享受高性能和安全可靠的优势。欢迎使用 📁 R2 文件服务器!
+感谢 CM [cmliu/CF-Workers-TEXT2KV](https://github.com/cmliu/CF-Workers-TEXT2KV)
+
