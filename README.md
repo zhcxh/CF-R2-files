@@ -6,7 +6,7 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 - **web前端**: 拖拽上传 + 文件列表 + 一键复制直连
 - **安全访问控制**: Cloudflare Workers + R2 存储，自带 Token 鉴权，通过设置 token 参数,可以限制只有拥有正确密钥的请求才能访问您的文件。https://你的域名/?token=你的密钥 即可使用。
 - **大小限制**: 单文件 ≤ 100MB，数量不限
-- **辅助工具脚本**: 提供了 Windows 批处理文件和 Linux Shell 脚本,用于方便地从本地上传文件到 R2。
+- **辅助工具脚本**: 提供了 Windows 批处理文件脚本,用于方便地从本地上传文件到 R2。
 - **👉 适用范围**: 仅适合个人自己文件存储使用！
 
 ## 使用说明
@@ -22,7 +22,7 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 3. **设置 TOKEN 变量 ， 绑定 R2 存储桶**
 
   - 为了增加安全性,您需要设置一个 TOKEN 变量,作为访问文件的密钥。在 Cloudflare Workers 的环境变量设置中,添加一个名为 `AUTH_TOKEN` 的变量,并为其赋予一个安全的值。
-  - 绑定 R2 存储桶 变量：`MY_BUCKET` 名称就是你上面创建 存储桶 的名称
+  - 绑定 R2 存储桶 变量：`MY_BUCKET` 值就是你上面创建 存储桶 的名称
 
 4. **访问配置页面**
 
@@ -41,7 +41,7 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 
 7. **简单的更新文件内容**
 
-  直接web或脚本bat上传,即可更新
+   - 直接web或脚本bat上传,即可更新
 
 通过这个无服务器应用,您可以方便地在 Cloudflare 的分布式网络上存储和管理文件,同时享受高性能和安全可靠的优势。欢迎使用 📁 R2 文件服务器!
 感谢 CM [cmliu/CF-Workers-TEXT2KV](https://github.com/cmliu/CF-Workers-TEXT2KV)
