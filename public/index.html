@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>R2 文件服务器（带 Token）</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px;color:#333}
+    .container{max-width:1200px;margin:0 auto;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.1)}
+    .header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:30px;text-align:center}
+    .header h1{font-size:2.5rem;margin-bottom:10px}
+    .content{padding:30px}
+    .upload-section{background:#f8f9fa;border-radius:15px;padding:25px;margin-bottom:30px}
+    #uploadArea{border:3px dashed #667eea;border-radius:10px;padding:40px;text-align:center;cursor:pointer;transition:.3s}
+    #uploadArea.dragover{border-color:#764ba2;background:#f0f4ff}
+    #uploadArea:hover{border-color:#764ba2;background:#f8f9ff}
+    #fileInput{display:none}
+    .btn{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:25px;cursor:pointer;margin:5px;transition:.3s}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(102,126,234,.4)}
+    .btn-danger{background:linear-gradient(135deg,#ff6b6b 0%,#ee5a24 100%)}
+    .file-item{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid #eee}
+    .file-item:hover{background:#f8f9fa}
+    .file-info{display:flex;align-items:center;gap:15px;flex:1}
+    .file-name{font-weight:500}
+    .file-size{font-size:.85rem;color:#666}
+    .progress{width:100%;height:4px;background:#eee;border-radius:2px;overflow:hidden;margin-top:10px}
+    .progress-bar{height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);width:0;transition:.3s}
+    .message{padding:15px 20px;border-radius:10px;margin-bottom:20px;display:none}
+    .message.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+    .message.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header"><h1>📁 R2 文件服务器</h1><p>带 Token 认证，支持上传/下载/删除</p></div>
+  <div class="content">
+    <div id="msg" class="message"></div>
+    <div class="upload-section">
+      <h2 style="margin-bottom:20px">📤 上传文件</h2>
+      <div id="uploadArea">
+        <div class="upload-icon">☁️</div>
+        <h3>拖拽或点击选择文件</h3>
+        <p style="color:#666;margin-top:10px">单文件最大 100 MB</p>
+        <input id="fileInput" type="file" multiple>
+      </div>
+      <div id="upProgress" class="progress" style="display:none">
+        <div id="upBar" class="progress-bar"></div>
+      </div>
+    </div>
+    <div>
+      <h2 style="margin-bottom:15px">📋 文件列表</h2>
+      <div id="fileList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 全局提前拦截浏览器默认拖放 */
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
+
+window.addEventListener('DOMContentLoaded', () => {
+  const API = location.origin + location.pathname.replace(/\/$/, '');
+  const TOKEN = new URLSearchParams(location.search).get('token') || localStorage.getItem('r2token') || '';
+  if (!TOKEN) { alert('请先在本 URL 带上 ?token=****** 再访问'); throw new Error('no token'); }
+  localStorage.setItem('r2token', TOKEN);
+
+  function qs(o) { return new URLSearchParams({ ...o, token: TOKEN }).toString(); }
+  function msg(txt, err) {
+    const m = document.getElementById('msg');
+    m.textContent = txt; m.className = 'message ' + (err ? 'error' : 'success');
+    m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 4000);
+  }
+
+  /* ========== 事件委托：直连 / 下载 / 删除 ========== */
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('btn-link')) {
+      e.stopPropagation();
+      const filename = e.target.dataset.name;
+      if (filename) copyDirectLink(filename);
+    }
+    if (e.target.classList.contains('btn-download')) {
+      e.stopPropagation();
+      const filename = e.target.dataset.name;
+      if (filename) downloadFile(filename);
+    }
+    if (e.target.classList.contains('btn-delete')) {
+      e.stopPropagation();
+      const filename = e.target.dataset.name;
+      if (filename) deleteFile(filename);
+    }
+  });
+
+  /* ========== 上传区域绑定 ========== */
+  const fileInput = document.getElementById('fileInput');
+  const upArea    = document.getElementById('uploadArea');
+  const upBar     = document.getElementById('upBar');
+  const upBox     = document.getElementById('upProgress');
+
+  upArea.onclick = () => fileInput.click();
+  upArea.addEventListener('dragover', e => { e.preventDefault(); upArea.classList.add('dragover'); });
+  upArea.addEventListener('dragleave', e => { e.preventDefault(); upArea.classList.remove('dragover'); });
+  upArea.addEventListener('drop', e => {
+    e.preventDefault(); upArea.classList.remove('dragover');
+    const files = [...e.dataTransfer.files];
+    if (files.length) uploadFiles(files);
+  });
+  fileInput.onchange = e => uploadFiles([...e.target.files]);
+
+  /* ========== 上传实现 ========== */
+  async function uploadFiles(files) {
+    upBox.style.display = 'block';
+    for (const f of files) {
+      await new Promise(resolve => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', API + '/upload?' + qs({}));
+        xhr.upload.onprogress = e => { if (e.lengthComputable) upBar.style.width = (e.loaded / e.total * 100) + '%'; };
+        xhr.onload = () => {
+          upBar.style.width = '0';
+          if (xhr.status === 200) { msg('上传成功'); loadList(); } else msg('上传失败', 1);
+          resolve();
+        };
+        xhr.onerror = () => { msg('网络错误', 1); resolve(); };
+        const fd = new FormData(); fd.append('file', f); xhr.send(fd);
+      });
+    }
+    upBox.style.display = 'none';
+  }
+
+  /* ========== 列表 / 工具函数 ========== */
+  async function loadList() {
+    const r = await fetch(API + '/files?' + qs({})).then(r => r.json()).catch(() => null);
+    if (!r) return msg('读取列表失败', 1);
+    document.getElementById('fileList').innerHTML = r.map(o => `
+      <div class="file-item">
+        <div class="file-info">
+          <span style="font-size:1.5rem">${o.icon || '📎'}</span>
+          <div>
+            <div class="file-name">${o.name}</div>
+            <div class="file-size">${fmt(o.size)} · ${new Date(o.uploadedAt).toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="file-actions">
+          <!-- 直连排在最前 -->
+          <button class="btn btn-link" data-name="${encodeURIComponent(o.name)}">直连</button>
+          <button class="btn btn-download" data-name="${encodeURIComponent(o.name)}">下载</button>
+          <button class="btn btn-danger btn-delete" data-name="${encodeURIComponent(o.name)}">删除</button>
+        </div>
+      </div>`).join('') || '<div style="padding:40px;text-align:center;color:#666">暂无文件</div>';
+  }
+
+  function fmt(b) {
+    const s = ['B', 'KB', 'MB', 'GB']; let i = 0;
+    while (b > 1024 && i < 3) { b /= 1024; i++; }
+    return b.toFixed(2) + ' ' + s[i];
+  }
+
+  async function downloadFile(n) {
+    const a = document.createElement('a');
+    a.href = API + '/files/' + n + '?' + qs({});
+    a.download = decodeURIComponent(n);
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  async function deleteFile(n) {
+    if (!confirm('确认删除 ' + decodeURIComponent(n) + ' ?')) return;
+    const r = await fetch(API + '/files/' + n + '?' + qs({}), { method: 'DELETE' }).then(r => r.json()).catch(() => null);
+    r ? msg('删除成功') : msg('删除失败', 1); loadList();
+  }
+
+  async function copyDirectLink(n) {
+    const url = API + '/files/' + n + '?' + qs({});
+    try {
+      await navigator.clipboard.writeText(url);
+      msg('直连已复制到剪贴板');
+    } catch (err) {
+      const ta = document.createElement('textarea');
+      ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = 0;
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      msg('直连已复制（降级方案）');
+    }
+  }
+
+  /* ========== 初始加载 ========== */
+  loadList();
+});
+</script>
+</body>
+</html>

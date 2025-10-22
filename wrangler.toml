@@ -1,0 +1,15 @@
+name = "r2-file-server"
+main = "worker.js"
+compatibility_date = "2023-12-01"
+
+[[rules]]
+type = "Text"
+globs = ["*.html"]
+fallthrough = true
+
+[[r2_buckets]]
+binding = "MY_BUCKET"
+bucket_name = "my-r2-name"   # ← 你的 R2 桶名
+
+[vars]
+AUTH_TOKEN = "xxxxxxxxxxx" # ← 你的 TOKEN
