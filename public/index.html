@@ -36,6 +36,18 @@
   <div class="header"><h1>📁 R2 文件服务器</h1><p>带 Token 认证，支持上传/下载/删除</p></div>
   <div class="content">
     <div id="msg" class="message"></div>
+<!-- ===== 一键生成器 ===== -->
+<div style="background:#f5f7fa;border:1px solid #e0e0e0;border-radius:8px;padding:20px;margin-bottom:20px">
+  <h3 style="margin:0 0 12px 0">一键生成上传工具</h3>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+    <span style="font-weight:500">域名：</span>
+    <input id="genDomain" type="text" readonly style="flex:1;min-width:220px;padding:8px 10px;border:1px solid #ccd0d5;border-radius:4px;background:#f4f4f4">
+    <span style="font-weight:500">TOKEN：</span>
+    <input id="genToken"  type="text" readonly style="flex:1;min-width:160px;padding:8px 10px;border:1px solid #ccd0d5;border-radius:4px;background:#f4f4f4">
+    <button id="genBtn" class="btn" style="margin:0">生成 upload.bat</button>
+  </div>
+  <div id="genMsg" style="margin-top:10px;font-size:13px;display:none"></div>
+</div>
     <div class="upload-section">
       <h2 style="margin-bottom:20px">📤 上传文件</h2>
       <div id="uploadArea">
@@ -186,6 +198,64 @@ window.addEventListener('DOMContentLoaded', () => {
   /* ========== 初始加载 ========== */
   loadList();
 });
+</script>
+<!-- 引入 JSZip -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<script>
+/* ===== 一键生成器 ===== */
+(() => {
+  // 自动解析域名 & token
+  const u = new URL(location.href);
+  const domain = u.origin + u.pathname.replace(/\/$/,'');
+  const token  = u.searchParams.get('token') || '';
+
+  const $  = id => document.getElementById(id);
+  const $d = $('genDomain');
+  const $t = $('genToken');
+  const $b = $('genBtn');
+  const $m = $('genMsg');
+
+  $d.value = domain;
+  $t.value = token;
+
+  $b.addEventListener('click', async () => {
+    if (!token) { $m.textContent='地址栏缺少 token！';$m.style.color='red';$m.style.display='block'; return; }
+
+    const bat = `@echo off
+chcp 65001 > nul
+:: ==================  R2 一键上传  ==================
+:: 拖文件到图标即可上传（已填好地址 & Token）
+
+set "FILE=%~1"
+if "%%FILE%%"=="" (
+    echo 用法：直接把文件拖到本图标上
+    pause & exit /b 1
+)
+if not exist "%%FILE%%" (
+    echo 文件不存在：%%FILE%%
+    pause & exit /b 1
+)
+echo 正在上传：%%~nx1 ...
+curl -X POST -F "file=@\"%%FILE%%\"" "${domain}/upload?token=${token}"
+echo.
+echo 上传完成！
+pause`;
+
+    const zip = new JSZip();
+    zip.file('upload.bat', bat);
+    const blob = await zip.generateAsync({type:'blob'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'upload.zip';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    $m.textContent='生成成功！已自动下载 upload.zip（内含已填好参数的 upload.bat）';$m.style.color='green';$m.style.display='block';
+  });
+})();
 </script>
 </body>
 </html>
