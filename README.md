@@ -34,7 +34,7 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 
 4. **使用辅助脚本上传文件**
 
-  - Windows 用户可以下载 `upload.bat` 脚本,修改 `upload.bat`中你的域名和token，然后拖动文件至 `upload.bat` 来上传本地文件到 R2。
+  - Windows 用户可以在web页下载 `upload.bat` 脚本，然后拖动文件至 `upload.bat` 来上传本地文件到 R2。
 
 5. **简单的更新文件内容**
 
