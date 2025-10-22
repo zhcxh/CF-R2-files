@@ -41,7 +41,7 @@ R2-files是一个在 Cloudflare Workers 上运行的无服务器应用程序,是
 
 7. **简单的更新文件内容**
 
-   - 直接web或脚本bat上传,即可更新
+  - 直接web或脚本bat上传,即可更新
 
 通过这个无服务器应用,您可以方便地在 Cloudflare 的分布式网络上存储和管理文件,同时享受高性能和安全可靠的优势。欢迎使用 📁 R2 文件服务器!
 感谢 CM [cmliu/CF-Workers-TEXT2KV](https://github.com/cmliu/CF-Workers-TEXT2KV)
